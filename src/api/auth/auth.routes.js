@@ -279,7 +279,7 @@ router.post('/resend-otp/ngo', async (req, res, next) => {
 
     if (!existingNgo) {
       res.status(403);
-      throw new Error('Invalid login credentials.');
+      throw new Error('Invalid login credentials. ');
     }
 
     let otp = Math.floor(100000 + Math.random() * 900000);
