@@ -26,133 +26,40 @@ type Media {
 
 enum Role {
   USER
+  NGO
   MODERATOR
   ADMIN
 }
 
 model User {
-  id             String           @id @default(auto()) @map("_id") @db.ObjectId
-  fullName       String
-  email          String           @unique
-  password       String
-  phone          String?
-  address        Address?
-  active         Boolean          @default(true)
-  verified       Boolean          @default(false)
-  verifiedAt     DateTime?
-  agency         Agency?
-  reviewGiven    Review[]
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  role           Role             @default(USER)
-  ServiceRequest ServiceRequest[]
-
-  createdEvents      Event[]             @relation(name: "creator-event")
-  eventSubscriptions EventSubscription[] @relation(name: "user-eventSubscription")
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  fullName   String
+  email      String    @unique
+  password   String?
+  phone      String?
+  address    Address?
+  active     Boolean   @default(true)
+  otp        Int?
+  verified   Boolean   @default(false)
+  verifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  role       Role      @default(USER)
 }
 
-model Agency {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  description String?
-  documents   Media[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  services    Service[]
-  user        User      @relation(fields: [userId], references: [id])
-  userId      String    @unique @db.ObjectId
-  bids        Bid[]
-}
-
-model Category {
-  id              String           @id @default(auto()) @map("_id") @db.ObjectId
-  name            String           @unique
-  description     String
-  services        Service[]
-  serviceRequests ServiceRequest[]
-
-  disabled Boolean @default(false)
-}
-
-model Bid {
-  id               String         @id @default(auto()) @map("_id") @db.ObjectId
-  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id])
-  serviceRequestId String         @db.ObjectId
-
-  agency   Agency @relation(fields: [agencyId], references: [id])
-  agencyId String @db.ObjectId
-
-  price    Float
-  message  String
-  accepted Boolean @default(false)
-}
-
-model ServiceRequest {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  user           User     @relation(fields: [userId], references: [id])
-  userId         String   @db.ObjectId
-  category       Category @relation(fields: [categoryId], references: [id])
-  categoryId     String   @db.ObjectId
-  title          String?
-  brief          String
-  address        Address?
-  startDate      DateTime
-  endDate        DateTime
-  lowestBudget   Float
-  highestBudget  Float
-  manPowerNeeded Boolean
-
-  requestApproval Boolean?
-  bids            Bid[]
-}
-
-model Service {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
-  title             String
-  category          Category @relation(fields: [categoryId], references: [id])
-  categoryId        String   @db.ObjectId
-  short_description String
-  long_description  String?
-  documents         Media[]
-  agency            Agency   @relation(fields: [agencyId], references: [id])
-  agencyId          String   @db.ObjectId
-  reviews           Review[]
-}
-
-model Review {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  rating    Float
-  comment   String
-  Service   Service? @relation(fields: [serviceId], references: [id])
-  serviceId String?  @db.ObjectId
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  String?  @db.ObjectId
-}
-
-model Event {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  description String?
-  startDate   DateTime
-  endDate     DateTime
-  address     Address?
-  thumbnail   Media
-  documents   Media[]
-
-  creatorId     String              @db.ObjectId
-  creator       User                @relation(fields: [creatorId], references: [id], name: "creator-event")
-  subscriptions EventSubscription[]
-}
-
-model EventSubscription {
-  id      String @id @default(auto()) @map("_id") @db.ObjectId
-  event   Event  @relation(fields: [eventId], references: [id])
-  eventId String @db.ObjectId
-  user    User   @relation(fields: [userId], references: [id], name: "user-eventSubscription")
-  userId  String @db.ObjectId
-
-  paid Boolean @default(false)
+model ngo {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  email      String    @unique
+  password   String?
+  phone      String?
+  address    Address?
+  active     Boolean   @default(true)
+  otp        String?
+  verified   Boolean   @default(false)
+  verifiedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  role      Role     @default(NGO)
 }
