@@ -6,7 +6,7 @@ const {
   createUser,
   updateUser,
 } = require('../users/users.services');
-const { findNgoByEmail, createNgo } = require('../ngo/ngo.services');
+const { findNgoByEmail, createNgo, updateNgo } = require('../ngo/ngo.services');
 const generateToken = require('../../utils/generateToken');
 const { sendEmail } = require('../../utils/sendEmail');
 
@@ -190,10 +190,12 @@ router.post('/login/user', async (req, res, next) => {
 
 router.post('/register/ngo', async (req, res, next) => {
   try {
-    const { name, email, phone } = req.body;
-    if (!email || !name || !phone) {
+    const { name, type, email, phone, address } = req.body;
+    if (!email || !type || !name || !phone) {
       res.status(400);
-      throw new Error('You must provide an email and a password.');
+      throw new Error(
+        'You must provide an email and a name and a type and a phone.'
+      );
     }
 
     const existingNgo = await findNgoByEmail(email);
@@ -206,7 +208,20 @@ router.post('/register/ngo', async (req, res, next) => {
 
     let otp = Math.floor(100000 + Math.random() * 900000);
 
-    const ngo = await createNgo({ name, email, phone, otp });
+    const ngo = await createNgo({
+      name,
+      type,
+      email,
+      phone,
+      address,
+      otp,
+    });
+
+    await sendEmail(
+      email,
+      'Welcome to CypIndia',
+      `Hi ${name},\n\nWelcome to CypIndia! We're excited to have you on board.\nYour Opt is ${otp}  \n\nBest Wishes,\nCypIndia Team `
+    );
 
     res.json({
       success: true,
@@ -347,6 +362,7 @@ router.post('/login/ngo', async (req, res, next) => {
     }
 
     res.json({
+      success: true,
       token: generateToken(existingNgo.id),
     });
   } catch (err) {

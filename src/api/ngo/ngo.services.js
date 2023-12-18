@@ -1,4 +1,3 @@
-const bcrypt = require('bcrypt');
 const { db } = require('../../utils/db');
 
 function findNgoByEmail(email) {
@@ -9,12 +8,28 @@ function findNgoByEmail(email) {
   });
 }
 
+function findNgoById(id) {
+  return db.ngo.findUnique({
+    where: {
+      id,
+    },
+  });
+}
+
 function createNgo(ngo) {
-  ngo.password = bcrypt.hashSync(ngo.password, 12);
   return db.ngo.create({
     data: ngo,
   });
 }
+
+const updateNgo = (id, body) => {
+  return db.ngo.update({
+    where: { id },
+    data: {
+      ...body,
+    },
+  });
+};
 
 const allNGOs = () => {
   return db.ngo.findMany();
@@ -22,6 +37,8 @@ const allNGOs = () => {
 
 module.exports = {
   findNgoByEmail,
+  findNgoById,
   createNgo,
+  updateNgo,
   allNGOs,
 };

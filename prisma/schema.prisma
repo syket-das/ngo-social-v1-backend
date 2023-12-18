@@ -11,6 +11,7 @@ datasource db {
 }
 
 type Address {
+  excat   String?
   city    String?
   state   String?
   country String?
@@ -50,16 +51,16 @@ model User {
 model ngo {
   id         String    @id @default(auto()) @map("_id") @db.ObjectId
   name       String
+  type       String
   email      String    @unique
   password   String?
-  phone      String?
-  address    Address?
+  phone      String
+  address    Address
   active     Boolean   @default(true)
-  otp        String?
+  otp        Int?
   verified   Boolean   @default(false)
   verifiedAt DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  role      Role     @default(NGO)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  role       Role      @default(NGO)
 }

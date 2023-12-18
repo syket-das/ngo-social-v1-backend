@@ -1,4 +1,3 @@
-const bcrypt = require('bcrypt');
 const { db } = require('../../utils/db');
 
 function findUserByEmail(email) {
@@ -20,9 +19,6 @@ function findUserById(id) {
     where: {
       id,
     },
-    include: {
-      agency: true,
-    },
   });
 }
 
@@ -36,25 +32,7 @@ const updateUser = (id, body) => {
 };
 
 const allUsers = () => {
-  return db.user.findMany({
-    include: {
-      agency: true,
-    },
-  });
-};
-
-const allMaintainers = () => {
-  return db.user.findMany({
-    where: {
-      NOT: {
-        role: 'USER',
-      },
-    },
-
-    include: {
-      agency: true,
-    },
-  });
+  return db.user.findMany({});
 };
 
 module.exports = {
@@ -63,5 +41,4 @@ module.exports = {
   createUser,
   updateUser,
   allUsers,
-  allMaintainers,
 };
