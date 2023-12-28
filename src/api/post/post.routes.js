@@ -4,11 +4,13 @@ const { findUserById } = require('../users/users.services');
 const { Role } = require('@prisma/client');
 const { createPost, allPosts } = require('./post.services');
 const postVote = require('./vote/vote.routes');
+const postComment = require('./comment/comment.routes');
 const { findNgoById } = require('../ngo/ngo.services');
 
 const router = express.Router();
 
 router.use('/vote', postVote);
+router.use('/comment', postComment);
 
 router.get('/all', async (req, res, next) => {
   try {
