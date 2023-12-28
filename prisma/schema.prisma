@@ -103,7 +103,7 @@ model PostCommentVote {
   userId    String?     @db.ObjectId
   ngo       Ngo?        @relation(fields: [ngoId], references: [id])
   ngoId     String?     @db.ObjectId
-  vote      VoteType
+  voteType  VoteType
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 }

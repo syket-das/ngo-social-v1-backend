@@ -20,7 +20,16 @@ const findPostCommentsByPostId = (postId) => {
   });
 };
 
+const findPostCommentById = (id) => {
+  return db.postComment.findUnique({
+    where: {
+      id,
+    },
+  });
+};
+
 module.exports = {
   createPostComment,
   findPostCommentsByPostId,
+  findPostCommentById,
 };
