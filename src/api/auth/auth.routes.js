@@ -57,14 +57,11 @@ router.post('/verify/user', async (req, res, next) => {
       res.status(400);
       throw new Error('You must provide an email and a otp.');
     }
-
     const existingUser = await findUserByEmail(email);
-
     if (!existingUser) {
       res.status(403);
       throw new Error('Invalid login credentials.');
     }
-
     if (Number(existingUser.otp) !== Number(otp)) {
       res.status(403);
       throw new Error('Invalid otp.');
@@ -168,8 +165,8 @@ router.post('/login/user', async (req, res, next) => {
 
     const existingUser = await findUserByEmail(email);
 
-    if (!existingUser) {
-      res.status(403);
+    if (!existingUser || !existingUser.verified || !existingUser.password) {
+      res.status(401);
       throw new Error('Invalid login credentials.');
     }
 
@@ -350,7 +347,7 @@ router.post('/login/ngo', async (req, res, next) => {
 
     const existingNgo = await findNgoByEmail(email);
 
-    if (!existingNgo) {
+    if (!existingNgo || !existingNgo.verified || !existingNgo.password) {
       res.status(403);
       throw new Error('Invalid login credentials.');
     }

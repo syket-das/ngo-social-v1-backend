@@ -46,13 +46,4 @@ router.get('/all', isAuthenticated, async (req, res, next) => {
   }
 });
 
-router.get('/allMaintainers', isAuthenticated, async (req, res, next) => {
-  try {
-    const maintainers = await allMaintainers();
-    res.json({ maintainers });
-  } catch (error) {
-    next(error);
-  }
-});
-
 module.exports = router;
