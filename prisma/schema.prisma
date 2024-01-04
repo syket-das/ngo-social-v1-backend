@@ -38,55 +38,65 @@ enum VoteType {
 }
 
 model User {
+  id                       String             @id @default(auto()) @map("_id") @db.ObjectId
+  fullName                 String
+  email                    String             @unique
+  password                 String?
+  phone                    String?
+  address                  Address?
+  active                   Boolean            @default(true)
+  otp                      Int?
+  verified                 Boolean            @default(false)
+  verifiedAt               DateTime?
+  role                     Role               @default(USER)
+  createdPosts             Post[]
+  votesGivenOnPost         PostVote[]
+  commentsOnPost           PostComment[]
+  votesGivenOnPostComment  PostCommentVote[]
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
+  createdIssues            Issue[]
+  votesGivenOnIssue        IssueVote[]
+  commentsOnIssue          IssueComment[]
+  votesGivenOnIssueComment IssueCommentVote[]
+  createdCampaigns         Campaign[]         @relation("UserToCampaign")
+  joinedCampaignIds        String[]           @db.ObjectId
+  joinedCampaigns          Campaign[]         @relation(fields: [joinedCampaignIds], references: [id])
+
+  memberOfNgoIds String[] @db.ObjectId
+  memberOfNgos   Ngo[]    @relation(fields: [memberOfNgoIds], references: [id])
+}
+
+model Ngo {
   id         String    @id @default(auto()) @map("_id") @db.ObjectId
-  fullName   String
+  name       String
+  type       String
   email      String    @unique
   password   String?
-  phone      String?
-  address    Address?
+  phone      String
+  address    Address
   active     Boolean   @default(true)
   otp        Int?
   verified   Boolean   @default(false)
   verifiedAt DateTime?
-  role       Role      @default(USER)
+  role       Role      @default(NGO)
 
-  createdPosts            Post[]
-  votesGivenOnPost        PostVote[]
-  commentsOnPost          PostComment[]
-  votesGivenOnPostComment PostCommentVote[]
+  memberIds String[] @db.ObjectId
+  members   User[]   @relation(fields: [memberIds], references: [id])
 
   createdAt                DateTime           @default(now())
   updatedAt                DateTime           @updatedAt
+  createdPosts             Post[]
+  votesGivenOnPost         PostVote[]
+  commentsOnPost           PostComment[]
+  votesGivenOnPostComment  PostCommentVote[]
   createdIssues            Issue[]
   votesGivenOnIssue        IssueVote[]
   commentsOnIssue          IssueComment[]
   votesGivenOnIssueComment IssueCommentVote[]
-}
-
-model Ngo {
-  id                      String            @id @default(auto()) @map("_id") @db.ObjectId
-  name                    String
-  type                    String
-  email                   String            @unique
-  password                String?
-  phone                   String
-  address                 Address
-  active                  Boolean           @default(true)
-  otp                     Int?
-  verified                Boolean           @default(false)
-  verifiedAt              DateTime?
-  role                    Role              @default(NGO)
-  createdPosts            Post[]
-  votesGivenOnPost        PostVote[]
-  commentsOnPost          PostComment[]
-  votesGivenOnPostComment PostCommentVote[]
-
-  createdAt                DateTime           @default(now())
-  updatedAt                DateTime           @updatedAt
-  createdIssues            Issue[]
-  votesGivenOnIssue        IssueVote[]
-  commentsOnIssue          IssueComment[]
-  votesGivenOnIssueComment IssueCommentVote[]
+  createdCampaigns         Campaign[]         @relation("NgoToCampaign")
+  joinedCampaignIds        String[]           @db.ObjectId
+  joinedCampaigns          Campaign[]         @relation(fields: [joinedCampaignIds], references: [id])
 }
 
 model PostVote {
@@ -226,4 +236,52 @@ model Issue {
   updatedAt DateTime       @updatedAt
   votes     IssueVote[]
   comments  IssueComment[]
+}
+
+model Campaign {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  ownUser   User?   @relation("UserToCampaign", fields: [ownUserId], references: [id])
+  ownUserId String? @db.ObjectId
+  ownNgo    Ngo?    @relation("NgoToCampaign", fields: [ownNgoId], references: [id])
+  ownNgoId  String? @db.ObjectId
+
+  title       String
+  description String
+  motto       String
+
+  media Media[]
+
+  virtual Boolean  @default(false)
+  address Address?
+
+  fundsRequired Float @default(0)
+
+  joinedUsers   User[]   @relation(fields: [joinedUserIds], references: [id])
+  joinedUserIds String[] @db.ObjectId
+
+  joinedNgos   Ngo[]    @relation(fields: [joinedNgoIds], references: [id])
+  joinedNgoIds String[] @db.ObjectId
+
+  active    Boolean @default(true)
+  suspended Boolean @default(false)
+
+  tags String[]
+
+  startDate DateTime
+  endDate   DateTime
+
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  campaignBroadcasts CampaignBroadcast[]
+}
+
+model CampaignBroadcast {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+  campaignId String   @db.ObjectId
+
+  message String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
