@@ -23,6 +23,8 @@ const allPosts = () => {
           votes: true,
         },
       },
+      ownUser: true,
+      ownNgo: true,
     },
   });
 };
