@@ -12,12 +12,32 @@ const router = express.Router();
 router.use('/vote', postVote);
 router.use('/comment', postComment);
 
-router.get('/all', async (req, res, next) => {
+router.get('/all', isAuthenticated, async (req, res, next) => {
   try {
     const posts = await allPosts();
+
+    const filteredPostsForLoggedInUser = posts.map((post) => {
+      return {
+        ...post,
+        loggedInUserOrNgoDetailsForPost: {
+          isVoted: post.votes.some((vote) => {
+            return vote.userId
+              ? vote.userId === req.payload.id
+              : vote.ngoId === req.payload.id;
+          }),
+
+          voteTypeIfVoted: post.votes.find((vote) => {
+            return vote.userId
+              ? vote.userId === req.payload.id
+              : vote.ngoId === req.payload.id;
+          })?.voteType,
+        },
+      };
+    });
+
     res.json({
       success: true,
-      data: posts,
+      data: filteredPostsForLoggedInUser,
     });
   } catch (error) {
     next(error);

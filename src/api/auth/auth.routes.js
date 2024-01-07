@@ -148,7 +148,7 @@ router.post('/set-password/user', async (req, res, next) => {
     res.json({
       success: true,
       message: 'Password updated successfully.',
-      token: generateToken(updatedUser.id),
+      token: generateToken(updatedUser.id, updatedUser.role),
     });
   } catch (err) {
     next(err);
@@ -178,7 +178,7 @@ router.post('/login/user', async (req, res, next) => {
 
     res.json({
       success: true,
-      token: generateToken(existingUser.id),
+      token: generateToken(existingUser.id, existingUser.role),
       userId: existingUser.id,
     });
   } catch (err) {
@@ -331,7 +331,7 @@ router.post('/set-password/ngo', async (req, res, next) => {
     res.json({
       success: true,
       message: 'Password updated successfully.',
-      token: generateToken(updatedNgo.id),
+      token: generateToken(updatedNgo.id, updatedNgo.role),
     });
   } catch (err) {
     next(err);
@@ -361,7 +361,7 @@ router.post('/login/ngo', async (req, res, next) => {
 
     res.json({
       success: true,
-      token: generateToken(existingNgo.id),
+      token: generateToken(existingNgo.id, existingNgo.role),
       ngoId: existingNgo.id,
     });
   } catch (err) {
