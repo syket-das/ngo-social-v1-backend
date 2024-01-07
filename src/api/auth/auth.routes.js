@@ -179,6 +179,7 @@ router.post('/login/user', async (req, res, next) => {
     res.json({
       success: true,
       token: generateToken(existingUser.id),
+      userId: existingUser.id,
     });
   } catch (err) {
     next(err);
@@ -361,6 +362,7 @@ router.post('/login/ngo', async (req, res, next) => {
     res.json({
       success: true,
       token: generateToken(existingNgo.id),
+      ngoId: existingNgo.id,
     });
   } catch (err) {
     next(err);
