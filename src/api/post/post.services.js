@@ -19,8 +19,11 @@ const allPosts = () => {
         orderBy: {
           createdAt: 'desc',
         },
+
         include: {
           votes: true,
+          user: true,
+          ngo: true,
         },
       },
       ownUser: true,
