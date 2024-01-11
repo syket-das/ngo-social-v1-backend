@@ -30,6 +30,8 @@ const getIssues = () => {
         },
         include: {
           votes: true,
+          user: true,
+          ngo: true,
         },
       },
       votes: true,
