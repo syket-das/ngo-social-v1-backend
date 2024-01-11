@@ -81,13 +81,32 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
   }
 });
 
-router.get('/all', async (req, res, next) => {
+router.get('/all', isAuthenticated, async (req, res, next) => {
   try {
     const issues = await getIssues();
 
+    const filteredIssuesForLoggedInUser = issues.map((issue) => {
+      return {
+        ...issue,
+        loggedInUserOrNgoDetailsForIssue: {
+          isVoted: issue.votes.some((vote) => {
+            return vote.userId
+              ? vote.userId === req.payload.id
+              : vote.ngoId === req.payload.id;
+          }),
+
+          voteTypeIfVoted: issue.votes.find((vote) => {
+            return vote.userId
+              ? vote.userId === req.payload.id
+              : vote.ngoId === req.payload.id;
+          })?.voteType,
+        },
+      };
+    });
+
     res.status(200).json({
       success: true,
-      data: issues,
+      data: filteredIssuesForLoggedInUser,
     });
   } catch (err) {
     next(err);
