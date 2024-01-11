@@ -26,17 +26,9 @@ const getIssues = () => {
     include: {
       comments: {
         where: {
-          parentId: null,
+          parent: null,
         },
-
         include: {
-          user: true,
-          ngo: true,
-          children: {
-            include: {
-              children: true,
-            },
-          },
           votes: true,
         },
       },
