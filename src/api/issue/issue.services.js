@@ -28,7 +28,10 @@ const getIssues = () => {
         where: {
           parentId: null,
         },
+
         include: {
+          user: true,
+          ngo: true,
           children: {
             include: {
               children: true,
