@@ -32,6 +32,11 @@ router.get('/all', isAuthenticated, async (req, res, next) => {
               : vote.ngoId === req.payload.id;
           })?.voteType,
         },
+
+        upVoteCount: post.votes.filter((vote) => vote.voteType === 'UPVOTE')
+          .length,
+
+        commentsCount: post.comments.length,
       };
     });
 
