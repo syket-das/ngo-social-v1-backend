@@ -10,7 +10,22 @@ const { findNgoByEmail, createNgo, updateNgo } = require('../ngo/ngo.services');
 const generateToken = require('../../utils/generateToken');
 const { sendEmail } = require('../../utils/sendEmail');
 
+const jwt = require('jsonwebtoken');
+const { isAuthenticated } = require('../../middlewares');
+
 const router = express.Router();
+
+router.get('/check-token', isAuthenticated, (req, res, next) => {
+  try {
+    res.json({
+      success: true,
+      role: req.payload.role,
+      id: req.payload.id,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
 
 router.post('/register/user', async (req, res, next) => {
   try {
