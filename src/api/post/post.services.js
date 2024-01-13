@@ -37,6 +37,22 @@ const findPostById = (id) => {
     where: {
       id,
     },
+    include: {
+      votes: true,
+      comments: {
+        orderBy: {
+          createdAt: 'desc',
+        },
+
+        include: {
+          votes: true,
+          user: true,
+          ngo: true,
+        },
+      },
+      ownUser: true,
+      ownNgo: true,
+    },
   });
 };
 

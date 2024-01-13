@@ -2,7 +2,7 @@ const express = require('express');
 const { isAuthenticated } = require('../../middlewares');
 const { findUserById } = require('../users/users.services');
 const { Role } = require('@prisma/client');
-const { createPost, allPosts } = require('./post.services');
+const { createPost, allPosts, findPostById } = require('./post.services');
 const postVote = require('./vote/vote.routes');
 const postComment = require('./comment/comment.routes');
 const { findNgoById } = require('../ngo/ngo.services');
@@ -11,43 +11,6 @@ const router = express.Router();
 
 router.use('/vote', postVote);
 router.use('/comment', postComment);
-
-router.get('/all', isAuthenticated, async (req, res, next) => {
-  try {
-    const posts = await allPosts();
-
-    const filteredPostsForLoggedInUser = posts.map((post) => {
-      return {
-        ...post,
-        loggedInUserOrNgoDetailsForPost: {
-          isVoted: post.votes.some((vote) => {
-            return vote.userId
-              ? vote.userId === req.payload.id
-              : vote.ngoId === req.payload.id;
-          }),
-
-          voteTypeIfVoted: post.votes.find((vote) => {
-            return vote.userId
-              ? vote.userId === req.payload.id
-              : vote.ngoId === req.payload.id;
-          })?.voteType,
-        },
-
-        upVoteCount: post.votes.filter((vote) => vote.voteType === 'UPVOTE')
-          .length,
-
-        commentsCount: post.comments.length,
-      };
-    });
-
-    res.json({
-      success: true,
-      data: filteredPostsForLoggedInUser,
-    });
-  } catch (error) {
-    next(error);
-  }
-});
 
 router.post('/create/user', isAuthenticated, async (req, res, next) => {
   try {
@@ -114,6 +77,85 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
     });
   } catch (err) {
     next(err);
+  }
+});
+
+router.get('/all', isAuthenticated, async (req, res, next) => {
+  try {
+    const posts = await allPosts();
+
+    const filteredPostsForLoggedInUser = posts.map((post) => {
+      return {
+        ...post,
+        loggedInUserOrNgoDetailsForPost: {
+          isVoted: post.votes.some((vote) => {
+            return vote.userId
+              ? vote.userId === req.payload.id
+              : vote.ngoId === req.payload.id;
+          }),
+
+          voteTypeIfVoted: post.votes.find((vote) => {
+            return vote.userId
+              ? vote.userId === req.payload.id
+              : vote.ngoId === req.payload.id;
+          })?.voteType,
+        },
+
+        upVoteCount: post.votes.filter((vote) => vote.voteType === 'UPVOTE')
+          .length,
+
+        commentsCount: post.comments.length,
+      };
+    });
+
+    res.json({
+      success: true,
+      data: filteredPostsForLoggedInUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/:id', isAuthenticated, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const post = await findPostById(id);
+
+    if (!post) {
+      res.status(404);
+      throw new Error('Post not found.');
+    }
+
+    const filteredPostForLoggedInUser = {
+      ...post,
+      loggedInUserOrNgoDetailsForPost: {
+        isVoted: post.votes.some((vote) => {
+          return vote.userId
+            ? vote.userId === req.payload.id
+            : vote.ngoId === req.payload.id;
+        }),
+
+        voteTypeIfVoted: post.votes.find((vote) => {
+          return vote.userId
+            ? vote.userId === req.payload.id
+            : vote.ngoId === req.payload.id;
+        })?.voteType,
+      },
+
+      upVoteCount: post.votes.filter((vote) => vote.voteType === 'UPVOTE')
+        .length,
+
+      commentsCount: post.comments.length,
+    };
+
+    res.json({
+      success: true,
+      data: filteredPostForLoggedInUser,
+    });
+  } catch (error) {
+    next(error);
   }
 });
 
