@@ -99,6 +99,47 @@ router.get('/all', isAuthenticated, async (req, res, next) => {
               ? vote.userId === req.payload.id
               : vote.ngoId === req.payload.id;
           })?.voteType,
+
+          isCommented: post.comments.some((comment) => {
+            return comment.userId
+              ? comment.userId === req.payload.id
+              : comment.ngoId === req.payload.id;
+          }),
+
+          isVotedInComments: post.comments.some((comment) => {
+            return comment.votes.some((vote) => {
+              return vote.userId
+                ? vote.userId === req.payload.id
+                : vote.ngoId === req.payload.id;
+            });
+          }),
+
+          voteTypeWithCommentIfVoted: post.comments
+            .filter((comment) => {
+              return comment.votes.some((vote) => {
+                return vote.userId
+                  ? vote.userId === req.payload.id
+                  : vote.ngoId === req.payload.id;
+              });
+            })
+            .map((comment) => {
+              return {
+                commentId: comment.id,
+                voteType: comment.votes.find((vote) => {
+                  return vote.userId
+                    ? vote.userId === req.payload.id
+                    : vote.ngoId === req.payload.id;
+                })?.voteType,
+              };
+            }),
+
+          commentIdsIfCommented: post.comments
+            .filter((comment) => {
+              return comment.userId
+                ? comment.userId === req.payload.id
+                : comment.ngoId === req.payload.id;
+            })
+            .map((comment) => comment.id),
         },
 
         upVoteCount: post.votes.filter((vote) => vote.voteType === 'UPVOTE')
