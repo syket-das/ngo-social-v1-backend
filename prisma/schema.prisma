@@ -11,13 +11,14 @@ datasource db {
 }
 
 type Address {
-  excat   String?
-  city    String?
-  state   String?
-  country String?
-  zipCode String?
-  lat     String?
-  lng     String?
+  addressLine1 String?
+  street       String?
+  city         String?
+  state        String?
+  country      String?
+  zipCode      String?
+  lat          String?
+  lng          String?
 }
 
 type Media {
