@@ -29,11 +29,11 @@ router.get('/check-token', isAuthenticated, (req, res, next) => {
 
 router.post('/register/user', async (req, res, next) => {
   try {
-    const { fullName, email } = req.body;
+    const { fullName, email, phone } = req.body;
     let otp = Math.floor(100000 + Math.random() * 900000);
-    if (!email || !fullName) {
+    if (!email || !fullName || !phone) {
       res.status(400);
-      throw new Error('You must provide a name and email.');
+      throw new Error('You must provide a name, email and phone.');
     }
 
     const existingUser = await findUserByEmail(email);
@@ -47,6 +47,7 @@ router.post('/register/user', async (req, res, next) => {
     const user = await createUser({
       fullName,
       email,
+      phone,
       otp,
     });
 
