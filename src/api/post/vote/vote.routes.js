@@ -1,7 +1,7 @@
 const express = require('express');
 
 const { findPostById } = require('../post.services');
-const { findUserById } = require('../../users/users.services');
+const { findUserById } = require('../../user/user.services');
 const { isAuthenticated } = require('../../../middlewares');
 const {
   createPostVote,

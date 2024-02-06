@@ -2,7 +2,7 @@ const express = require('express');
 
 const { Role } = require('@prisma/client');
 const { isAuthenticated } = require('../../middlewares');
-const { findUserById } = require('../users/users.services');
+const { findUserById } = require('../user/user.services');
 const {
   createCampaign,
   getCampaigns,

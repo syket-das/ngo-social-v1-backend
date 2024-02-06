@@ -1,7 +1,7 @@
 const express = require('express');
 
 const { isAuthenticated } = require('../../../../middlewares');
-const { findUserById } = require('../../../users/users.services');
+const { findUserById } = require('../../../user/user.services');
 const { Role } = require('@prisma/client');
 const { findPostCommentById } = require('../comment.services');
 const {

@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { findUserById } = require('../../users/users.services');
+const { findUserById } = require('../../user/user.services');
 const { isAuthenticated } = require('../../../middlewares');
 
 const { findNgoById } = require('../../ngo/ngo.services');

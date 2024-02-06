@@ -5,7 +5,7 @@ const {
   updateUser,
   allUsers,
   allMaintainers,
-} = require('./users.services');
+} = require('./user.services');
 
 const router = express.Router();
 

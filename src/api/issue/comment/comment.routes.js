@@ -1,6 +1,6 @@
 const express = require('express');
 const { isAuthenticated } = require('../../../middlewares');
-const { findUserById } = require('../../users/users.services');
+const { findUserById } = require('../../user/user.services');
 const { findNgoById } = require('../../ngo/ngo.services');
 const { Role } = require('@prisma/client');
 const { getIssueById } = require('../issue.services');

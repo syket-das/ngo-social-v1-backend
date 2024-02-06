@@ -5,7 +5,7 @@ const {
   findUserByEmail,
   createUser,
   updateUser,
-} = require('../users/users.services');
+} = require('../user/user.services');
 const { findNgoByEmail, createNgo, updateNgo } = require('../ngo/ngo.services');
 const generateToken = require('../../utils/generateToken');
 const { sendEmail } = require('../../utils/sendEmail');

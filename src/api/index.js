@@ -1,7 +1,7 @@
 const express = require('express');
 
 const auth = require('./auth/auth.routes');
-const users = require('./users/users.routes');
+const user = require('./user/user.routes');
 const ngo = require('./ngo/ngo.routes');
 const post = require('./post/post.routes');
 const issue = require('./issue/issue.routes');
@@ -16,7 +16,7 @@ router.get('/', (req, res) => {
 });
 
 router.use('/auth', auth);
-router.use('/users', users);
+router.use('/user', user);
 router.use('/ngo', ngo);
 router.use('/post', post);
 router.use('/issue', issue);
