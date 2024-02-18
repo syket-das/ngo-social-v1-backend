@@ -115,7 +115,7 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
 });
 
 router.patch(
-  'member/mutate/user/:campaignId',
+  '/member/mutate/user/:campaignId',
   isAuthenticated,
   async (req, res, next) => {
     try {
@@ -199,20 +199,42 @@ router.patch(
   }
 );
 
-router.get('/all', async (req, res, next) => {
+router.get('/all', isAuthenticated, async (req, res, next) => {
   try {
     const campaigns = await getCampaigns();
 
+    const filteredCampaignsForLoggedInUser = campaigns.map((campaign) => {
+      return {
+        ...campaign,
+        loggedInUserOrNgoDetailsForCampaign: {
+          isOwner:
+            campaign.ownUserId === req.payload.id
+              ? true
+              : campaign.ownNgoId === req.payload.id
+              ? true
+              : false,
+          isJoined: campaign.joinedUsers?.some(
+            (user) => user.id === req.payload.id
+          )
+            ? true
+            : campaign.joinedNgos?.some((ngo) => ngo.id === req.payload.id)
+            ? true
+            : false,
+        },
+      };
+    });
+
     return res.json({
       success: true,
-      data: campaigns,
+      data: filteredCampaignsForLoggedInUser,
     });
   } catch (error) {
+    console.log(error);
     next(error);
   }
 });
 
-router.get('/:campaignId', async (req, res, next) => {
+router.get('/:campaignId', isAuthenticated, async (req, res, next) => {
   try {
     const { campaignId } = req.params;
 
@@ -222,11 +244,31 @@ router.get('/:campaignId', async (req, res, next) => {
       throw new Error('Campaign not found');
     }
 
+    const filteredCampaignForLoggedInUser = {
+      ...campaign,
+      loggedInUserOrNgoDetailsForCampaign: {
+        isOwner:
+          campaign.ownUserId === req.payload.id
+            ? true
+            : campaign.ownNgoId === req.payload.id
+            ? true
+            : false,
+        isJoined: campaign.joinedUsers?.some(
+          (user) => user.id === req.payload.id
+        )
+          ? true
+          : campaign.joinedNgos?.some((ngo) => ngo.id === req.payload.id)
+          ? true
+          : false,
+      },
+    };
+
     return res.json({
       success: true,
-      data: campaign,
+      data: filteredCampaignForLoggedInUser,
     });
   } catch (error) {
+    console.log(error);
     next(error);
   }
 });

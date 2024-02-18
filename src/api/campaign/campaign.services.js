@@ -7,13 +7,26 @@ const createCampaign = (campaign) => {
 };
 
 const getCampaigns = () => {
-  return db.campaign.findMany({});
+  return db.campaign.findMany({
+    include: {
+      joinedUsers: true,
+      joinedNgos: true,
+      ownUser: true,
+      ownNgo: true,
+    },
+  });
 };
 
 const getCampaignById = (id) => {
   return db.campaign.findUnique({
     where: {
       id,
+    },
+    include: {
+      joinedUsers: true,
+      joinedNgos: true,
+      ownUser: true,
+      ownNgo: true,
     },
   });
 };

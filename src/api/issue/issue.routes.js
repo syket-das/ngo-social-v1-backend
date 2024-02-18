@@ -100,7 +100,49 @@ router.get('/all', isAuthenticated, async (req, res, next) => {
               ? vote.userId === req.payload.id
               : vote.ngoId === req.payload.id;
           })?.voteType,
+
+          isCommented: issue.comments.some((comment) => {
+            return comment.userId
+              ? comment.userId === req.payload.id
+              : comment.ngoId === req.payload.id;
+          }),
+
+          isVotedInComments: issue.comments.some((comment) => {
+            return comment.votes.some((vote) => {
+              return vote.userId
+                ? vote.userId === req.payload.id
+                : vote.ngoId === req.payload.id;
+            });
+          }),
+
+          voteTypeWithCommentIfVoted: issue.comments
+            .filter((comment) => {
+              return comment.userId
+                ? comment.userId === req.payload.id
+                : comment.ngoId === req.payload.id;
+            })
+            .map((comment) => {
+              return {
+                commentId: comment.id,
+                voteType: comment.votes.find((vote) => {
+                  return vote.userId
+                    ? vote.userId === req.payload.id
+                    : vote.ngoId === req.payload.id;
+                })?.voteType,
+              };
+            }),
+
+          commentIdsIfCommented: issue.comments
+            .filter((comment) => {
+              return comment.userId
+                ? comment.userId === req.payload.id
+                : comment.ngoId === req.payload.id;
+            })
+            .map((comment) => comment.id),
         },
+        upVoteCount: issue.votes.filter((vote) => vote.voteType === 'UPVOTE')
+          .length,
+        commentsCount: issue.comments.length,
       };
     });
 
@@ -113,7 +155,7 @@ router.get('/all', isAuthenticated, async (req, res, next) => {
   }
 });
 
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', isAuthenticated, async (req, res, next) => {
   try {
     const issue = await getIssueById(req.params.id);
 
@@ -122,11 +164,71 @@ router.get('/:id', async (req, res, next) => {
       throw new Error('Issue not found.');
     }
 
+    const filteredIssueForLoggedInUser = {
+      ...issue,
+      loggedInUserOrNgoDetailsForIssue: {
+        isVoted: issue.votes.some((vote) => {
+          return vote.userId
+            ? vote.userId === req.payload.id
+            : vote.ngoId === req.payload.id;
+        }),
+
+        voteTypeIfVoted: issue.votes.find((vote) => {
+          return vote.userId
+            ? vote.userId === req.payload.id
+            : vote.ngoId === req.payload.id;
+        })?.voteType,
+
+        isCommented: issue.comments.some((comment) => {
+          return comment.userId
+            ? comment.userId === req.payload.id
+            : comment.ngoId === req.payload.id;
+        }),
+
+        isVotedInComments: issue.comments.some((comment) => {
+          return comment.votes.some((vote) => {
+            return vote.userId
+              ? vote.userId === req.payload.id
+              : vote.ngoId === req.payload.id;
+          });
+        }),
+
+        voteTypeWithCommentIfVoted: issue.comments
+          .filter((comment) => {
+            return comment.userId
+              ? comment.userId === req.payload.id
+              : comment.ngoId === req.payload.id;
+          })
+          .map((comment) => {
+            return {
+              commentId: comment.id,
+              voteType: comment.votes.find((vote) => {
+                return vote.userId
+                  ? vote.userId === req.payload.id
+                  : vote.ngoId === req.payload.id;
+              })?.voteType,
+            };
+          }),
+
+        commentIdsIfCommented: issue.comments
+          .filter((comment) => {
+            return comment.userId
+              ? comment.userId === req.payload.id
+              : comment.ngoId === req.payload.id;
+          })
+          .map((comment) => comment.id),
+      },
+      upVoteCount: issue.votes.filter((vote) => vote.voteType == 'UPVOTE')
+        .length,
+      commentsCount: issue.comments.length,
+    };
+
     res.status(200).json({
       success: true,
-      data: issue,
+      data: filteredIssueForLoggedInUser,
     });
   } catch (err) {
+    console.log(err);
     next(err);
   }
 });

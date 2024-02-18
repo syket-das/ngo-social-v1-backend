@@ -13,10 +13,20 @@ const getIssueById = (id) => {
     },
 
     include: {
-      comments: true,
       votes: true,
-      ownNgo: true,
+      comments: {
+        orderBy: {
+          createdAt: 'desc',
+        },
+
+        include: {
+          votes: true,
+          user: true,
+          ngo: true,
+        },
+      },
       ownUser: true,
+      ownNgo: true,
     },
   });
 };
@@ -25,9 +35,10 @@ const getIssues = () => {
   return db.issue.findMany({
     include: {
       comments: {
-        where: {
-          parent: null,
+        orderBy: {
+          createdAt: 'desc',
         },
+
         include: {
           votes: true,
           user: true,
