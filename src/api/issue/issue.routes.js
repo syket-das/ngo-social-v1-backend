@@ -117,9 +117,11 @@ router.get('/all', isAuthenticated, async (req, res, next) => {
 
           voteTypeWithCommentIfVoted: issue.comments
             .filter((comment) => {
-              return comment.userId
-                ? comment.userId === req.payload.id
-                : comment.ngoId === req.payload.id;
+              return comment.votes.some((vote) => {
+                return vote.userId
+                  ? vote.userId === req.payload.id
+                  : vote.ngoId === req.payload.id;
+              });
             })
             .map((comment) => {
               return {
@@ -195,9 +197,11 @@ router.get('/:id', isAuthenticated, async (req, res, next) => {
 
         voteTypeWithCommentIfVoted: issue.comments
           .filter((comment) => {
-            return comment.userId
-              ? comment.userId === req.payload.id
-              : comment.ngoId === req.payload.id;
+            return comment.votes.some((vote) => {
+              return vote.userId
+                ? vote.userId === req.payload.id
+                : vote.ngoId === req.payload.id;
+            });
           })
           .map((comment) => {
             return {
