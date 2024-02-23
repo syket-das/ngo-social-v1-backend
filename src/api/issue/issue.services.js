@@ -16,7 +16,10 @@ const getIssueById = (id) => {
       votes: true,
       comments: {
         orderBy: {
-          createdAt: 'desc',
+          // most voted comments first
+          votes: {
+            _count: 'desc',
+          },
         },
 
         include: {
@@ -48,6 +51,9 @@ const getIssues = () => {
       votes: true,
       ownNgo: true,
       ownUser: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
     },
   });
 };
