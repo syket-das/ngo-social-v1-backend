@@ -19,6 +19,8 @@ const { findNgoById } = require('../ngo/ngo.services');
 const router = express.Router();
 
 router.post('/create/user', isAuthenticated, async (req, res, next) => {
+  const isoDate = new Date().toISOString();
+
   try {
     const { id: userId } = req.payload;
 
@@ -49,8 +51,8 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
       title,
       description,
       motto,
-      startDate,
-      endDate,
+      startDate: '2024-03-23T14:31:16Z',
+      endDate: '2024-02-23T14:31:16Z',
       address,
       virtual: virtual || undefined,
       fundsRequired: fundsRequired || undefined,
@@ -62,6 +64,7 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
       data: createdCampaign,
     });
   } catch (error) {
+    console.log(error.message);
     next(error);
   }
 });

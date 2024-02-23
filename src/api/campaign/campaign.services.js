@@ -13,6 +13,7 @@ const getCampaigns = () => {
       joinedNgos: true,
       ownUser: true,
       ownNgo: true,
+      campaignBroadcasts: true,
     },
   });
 };
@@ -27,6 +28,7 @@ const getCampaignById = (id) => {
       joinedNgos: true,
       ownUser: true,
       ownNgo: true,
+      campaignBroadcasts: true,
     },
   });
 };
