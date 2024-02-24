@@ -9,7 +9,7 @@ const { getIssueById } = require('../issue.services');
 const {
   findIssueVoteForUser,
   deleteIssueVote,
-  updateIssuetVote,
+  updateIssueVote,
   createIssueVote,
   findIssueVoteForNgo,
 } = require('./vote.services');
@@ -52,7 +52,7 @@ router.patch('/mutate/user', isAuthenticated, async (req, res, next) => {
           message: 'Vote deleted.',
         });
       } else {
-        const updateVote = await updateIssuetVote(voteExist.id, {
+        const updateVote = await updateIssueVote(voteExist.id, {
           voteType,
         });
 
@@ -125,7 +125,7 @@ router.patch('/mutate/ngo', isAuthenticated, async (req, res, next) => {
       }
     }
 
-    const vote = await createPostVote({
+    const vote = await createIssueVote({
       issueId,
       ngoId,
       voteType,
@@ -136,6 +136,7 @@ router.patch('/mutate/ngo', isAuthenticated, async (req, res, next) => {
       data: vote,
     });
   } catch (err) {
+    console.log(err);
     next(err);
   }
 });

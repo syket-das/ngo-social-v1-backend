@@ -79,7 +79,7 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
     }
 
     const issueComment = await createIssueComment({
-      postId,
+      issueId,
       ngoId,
       comment,
       parentId,
@@ -90,6 +90,7 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
       data: issueComment,
     });
   } catch (err) {
+    console.log(err);
     next(err);
   }
 });

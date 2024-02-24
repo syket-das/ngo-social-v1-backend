@@ -42,7 +42,7 @@ const findIssueVoteById = (voteId) => {
   });
 };
 
-const updateIssuetVote = (voteId, vote) => {
+const updateIssueVote = (voteId, vote) => {
   return db.issueVote.update({
     where: {
       id: voteId,
@@ -67,6 +67,6 @@ module.exports = {
   findIssueVoteForUser,
   findIssueVoteForNgo,
   findIssueVoteById,
-  updateIssuetVote,
+  updateIssueVote,
   deleteIssueVote,
 };
