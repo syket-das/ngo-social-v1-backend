@@ -27,9 +27,17 @@ router.get('/profile', isAuthenticated, async (req, res, next) => {
 router.put('/profile/update', isAuthenticated, async (req, res, next) => {
   try {
     const { id: userId } = req.payload;
-    const { fullName, phone, address } = req.body;
+    const { fullName, bio, profession, interests, phone, address } = req.body;
 
-    const user = await updateUser(userId, { fullName, phone, address });
+    const user = await updateUser(userId, {
+      fullName,
+      phone,
+      address,
+
+      bio: bio,
+      profession: profession,
+      interests: interests,
+    });
 
     res.status(200).json(user);
   } catch (error) {

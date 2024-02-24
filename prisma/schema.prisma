@@ -38,10 +38,26 @@ enum VoteType {
   DOWNVOTE
 }
 
+enum Tags {
+  EDUCATION
+  HEALTH
+  ENVIRONMENT
+  ANIMALS
+  DISASTER
+  POVERTY
+  HUMAN_RIGHT
+  CHILD_RIGHT
+  AWARENESS
+  OTHERS
+}
+
 model User {
   id                       String             @id @default(auto()) @map("_id") @db.ObjectId
   fullName                 String
   email                    String             @unique
+  bio                      String?
+  profession               String?
+  interests                String[]
   password                 String?
   phone                    String?
   address                  Address?
@@ -72,6 +88,7 @@ model Ngo {
   id         String    @id @default(auto()) @map("_id") @db.ObjectId
   name       String
   type       String
+  bio        String?
   email      String    @unique
   password   String?
   phone      String
@@ -157,6 +174,8 @@ model Post {
   ownNgo   Ngo?    @relation(fields: [ownNgoId], references: [id])
   ownNgoId String? @db.ObjectId
 
+  tags Tags[] @default([])
+
   votes    PostVote[]
   comments PostComment[]
 
@@ -219,6 +238,7 @@ model Issue {
   title       String
   description String
   media       Media[]
+  tags        Tags[]  @default([])
 
   address Address?
 
@@ -249,6 +269,7 @@ model Campaign {
   title       String
   description String
   motto       String
+  tags        Tags[] @default([])
 
   media Media[]
 
@@ -265,8 +286,6 @@ model Campaign {
 
   active    Boolean @default(true)
   suspended Boolean @default(false)
-
-  tags String[]
 
   startDate DateTime
   endDate   DateTime

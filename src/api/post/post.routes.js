@@ -14,7 +14,7 @@ router.use('/comment', postComment);
 
 router.post('/create/user', isAuthenticated, async (req, res, next) => {
   try {
-    const { title, description, address } = req.body;
+    const { title, description, address, tags } = req.body;
 
     if (!title || !description) {
       res.status(400);
@@ -34,6 +34,7 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
       title,
       description,
       address,
+      tags,
       ownUserId: userId,
     });
 
@@ -48,7 +49,7 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
 
 router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
   try {
-    const { title, description, address } = req.body;
+    const { title, description, address, tags } = req.body;
 
     if (!title || !description) {
       res.status(400);
@@ -68,6 +69,7 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
       title,
       description,
       address,
+      tags,
       ownNgoId: ngoId,
     });
 
