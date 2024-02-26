@@ -134,6 +134,22 @@ const broadcastCampaign = (broadcast) => {
   });
 };
 
+const deleteBroadcast = (id) => {
+  return db.campaignBroadcast.delete({
+    where: {
+      id,
+    },
+  });
+};
+
+const getCampaignBroadcastById = (id) => {
+  return db.campaignBroadcast.findUnique({
+    where: {
+      id,
+    },
+  });
+};
+
 module.exports = {
   createCampaign,
   getCampaigns,
@@ -145,4 +161,7 @@ module.exports = {
   leaveCampaignAsNgo,
   checkIfUserJoinedCampaign,
   checkIfNgoJoinedCampaign,
+  broadcastCampaign,
+  deleteBroadcast,
+  getCampaignBroadcastById,
 };

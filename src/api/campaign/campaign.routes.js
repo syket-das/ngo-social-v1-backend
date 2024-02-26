@@ -13,6 +13,9 @@ const {
   leaveCampaignAsNgo,
   checkIfUserJoinedCampaign,
   leaveCampaignAsUser,
+  broadcastCampaign,
+  deleteBroadcast,
+  getCampaignBroadcastById,
 } = require('./campaign.services');
 const { findNgoById } = require('../ngo/ngo.services');
 
@@ -272,6 +275,112 @@ router.get('/:campaignId', isAuthenticated, async (req, res, next) => {
     });
   } catch (error) {
     console.log(error);
+    next(error);
+  }
+});
+
+// api broadcast messages
+
+router.post('/broadcast', isAuthenticated, async (req, res, next) => {
+  const { id } = req.payload;
+  const { campaignId, message } = req.body;
+
+  if (!campaignId || !message) {
+    return res.status(400).json({
+      success: false,
+      message: 'All fields are required',
+    });
+  }
+
+  try {
+    const campaign = await getCampaignById(campaignId);
+
+    if (!campaign) {
+      throw new Error('Campaign not found');
+    }
+
+    if (req.payload.role == Role.NGO) {
+      if (campaign.ownNgoId !== id) {
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to broadcast message',
+        });
+      }
+
+      const campaignBroadcast = await broadcastCampaign({
+        campaignId,
+        message,
+      });
+
+      return res.json({
+        success: true,
+        data: campaignBroadcast,
+      });
+    } else if (req.payload.role == Role.USER) {
+      if (campaign.ownUserId !== id) {
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to broadcast message',
+        });
+      }
+
+      const campaignBroadcast = await broadcastCampaign({
+        campaignId,
+        message,
+      });
+
+      return res.json({
+        success: true,
+        data: campaignBroadcast,
+      });
+    }
+  } catch (error) {
+    console.log(error.message);
+    next(error);
+  }
+});
+
+router.delete('/broadcast/:id', isAuthenticated, async (req, res, next) => {
+  const { id } = req.payload;
+  const { id: broadcastId } = req.params;
+
+  try {
+    const broadcast = await getCampaignBroadcastById(broadcastId);
+
+    if (!broadcast) {
+      throw new Error('Broadcast not found');
+    }
+
+    const campaign = await getCampaignById(broadcast.campaignId);
+
+    if (!campaign) {
+      throw new Error('Campaign not found');
+    }
+
+    if (req.payload.role == Role.NGO) {
+      if (campaign.ownNgoId !== id) {
+        throw new Error('Not authorized to delete broadcast');
+      }
+
+      const deletedBroadcast = await deleteBroadcast(broadcastId);
+
+      return res.json({
+        success: true,
+        data: deletedBroadcast,
+      });
+    } else if (req.payload.role == Role.USER) {
+      if (campaign.ownUserId !== id) {
+        throw new Error('Not authorized to delete broadcast');
+      }
+
+      const deletedBroadcast = await deleteBroadcast(broadcastId);
+
+      return res.json({
+        success: true,
+        data: deletedBroadcast,
+      });
+    }
+  } catch (error) {
     next(error);
   }
 });
