@@ -4,15 +4,13 @@ const helmet = require('helmet');
 const cors = require('cors');
 require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-
 const middlewares = require('./middlewares');
 const api = require('./api');
 const { createTransaction } = require('./api/payment/payment.services');
 
 const app = express();
 
-const endpointSecret =
-  'whsec_c5a6a75ecfd1a5c35ff5303f7b105b9e65e97a8e98359cf273d5e9b9d08e9ee6';
+const endpointSecret = 'whsec_1h4Ng24i5PZ3zXYHG1oeju2AWvzQM3eJ';
 
 app.post(
   '/api/v1/payment/webhook',
