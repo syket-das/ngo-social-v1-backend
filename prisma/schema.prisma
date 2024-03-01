@@ -51,6 +51,12 @@ enum Tags {
   OTHERS
 }
 
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
 model User {
   id                       String             @id @default(auto()) @map("_id") @db.ObjectId
   fullName                 String
@@ -80,8 +86,10 @@ model User {
   joinedCampaignIds        String[]           @db.ObjectId
   joinedCampaigns          Campaign[]         @relation(fields: [joinedCampaignIds], references: [id])
 
-  memberOfNgoIds String[] @db.ObjectId
-  memberOfNgos   Ngo[]    @relation(fields: [memberOfNgoIds], references: [id])
+  memberOfNgoIds String[]       @db.ObjectId
+  memberOfNgos   Ngo[]          @relation(fields: [memberOfNgoIds], references: [id])
+  notifications  Notification[]
+  fundRaisings   FundRaising[]
 }
 
 model Ngo {
@@ -115,6 +123,8 @@ model Ngo {
   createdCampaigns         Campaign[]         @relation("NgoToCampaign")
   joinedCampaignIds        String[]           @db.ObjectId
   joinedCampaigns          Campaign[]         @relation(fields: [joinedCampaignIds], references: [id])
+  notifications            Notification[]
+  fundRaisings             FundRaising[]
 }
 
 model PostVote {
@@ -290,6 +300,8 @@ model Campaign {
   startDate DateTime
   endDate   DateTime
 
+  transactions Transaction[]
+
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   campaignBroadcasts CampaignBroadcast[]
@@ -301,6 +313,63 @@ model CampaignBroadcast {
   campaignId String   @db.ObjectId
 
   message String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  user    User?   @relation(fields: [userId], references: [id])
+  userId  String? @db.ObjectId
+  ngo     Ngo?    @relation(fields: [ngoId], references: [id])
+  ngoId   String? @db.ObjectId
+  message String
+  link    String?
+
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FundRaising {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  user        User?   @relation(fields: [userId], references: [id])
+  userId      String? @db.ObjectId
+  ngo         Ngo?    @relation(fields: [ngoId], references: [id])
+  ngoId       String? @db.ObjectId
+  amount      Float
+  title       String
+  description String
+  media       Media[]
+  active      Boolean @default(true)
+  suspended   Boolean @default(false)
+  address     Address
+
+  transactions Transaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Transaction {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  donorRole Role
+  donorId   String
+
+  amount Float
+  status TransactionStatus @default(PENDING)
+
+  refunded     Boolean @default(false)
+  refundReason String?
+
+  gatewayTransactionId String?
+  gatewayTransaction   Json?
+
+  fundRaising   FundRaising? @relation(fields: [fundRaisingId], references: [id])
+  fundRaisingId String?      @db.ObjectId
+  campaign      Campaign?    @relation(fields: [campaignId], references: [id])
+  campaignId    String?      @db.ObjectId
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

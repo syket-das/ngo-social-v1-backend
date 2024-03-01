@@ -14,6 +14,7 @@ const getCampaigns = () => {
       ownUser: true,
       ownNgo: true,
       campaignBroadcasts: true,
+      transactions: true,
     },
   });
 };
@@ -29,6 +30,7 @@ const getCampaignById = (id) => {
       ownUser: true,
       ownNgo: true,
       campaignBroadcasts: true,
+      transactions: true,
     },
   });
 };
@@ -150,6 +152,22 @@ const getCampaignBroadcastById = (id) => {
   });
 };
 
+const donateToCampaign = (campaignId, data) => {
+  return db.campaign.update({
+    data: {
+      transactions: {
+        create: {
+          data,
+        },
+      },
+    },
+
+    where: {
+      id: campaignId,
+    },
+  });
+};
+
 module.exports = {
   createCampaign,
   getCampaigns,
@@ -164,4 +182,5 @@ module.exports = {
   broadcastCampaign,
   deleteBroadcast,
   getCampaignBroadcastById,
+  donateToCampaign,
 };
