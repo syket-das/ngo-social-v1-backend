@@ -7,6 +7,8 @@ const { findNgoById } = require('../ngo/ngo.services');
 const issueVote = require('./vote/vote.routes');
 const issueComment = require('./comment/comment.routes');
 const { Role } = require('@prisma/client');
+const { addMediaToS3, getMediaFromS3 } = require('../../utils/s3');
+const { v4: uuidv4 } = require('uuid');
 
 const router = express.Router();
 
@@ -14,6 +16,10 @@ router.use('/vote', issueVote);
 router.use('/comment', issueComment);
 
 router.post('/create/user', isAuthenticated, async (req, res, next) => {
+  const mediaAvailable = req.files && req.files.length > 0;
+
+  let mKeys = [];
+
   try {
     const { title, description, address, tags } = req.body;
 
@@ -31,12 +37,37 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
       throw new Error('User not found or not authorized.');
     }
 
+    // Upload media files asynchronously and collect promises
+    const uploadPromises = req.files.map(async (media) => {
+      const mediaName = `${uuidv4()}.${media.originalname.split('.').pop()}`;
+      const key = `issue/user/${userId}/${mediaName}`;
+
+      mKeys.push(key);
+
+      // Upload media to S3
+      const response = await addMediaToS3({
+        key: key,
+        body: media.buffer,
+        mimetype: media.mimetype,
+      });
+
+      return {
+        key,
+        url: getMediaFromS3(key),
+        type: media.mimetype,
+      };
+    });
+
+    // Wait for all uploads to complete
+    const mediaFiles = await Promise.all(uploadPromises);
+
     const issue = await createIssue({
       title,
       description,
-      address,
-      tags,
+      address: JSON.parse(address),
+      tags: JSON.parse(tags),
       ownUserId: userId,
+      media: mediaFiles,
     });
 
     res.status(201).json({
@@ -44,11 +75,18 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
       data: issue,
     });
   } catch (err) {
+    await mKeys.forEach(async (key) => {
+      await deleteMediaFromS3(key);
+    });
+
     next(err);
   }
 });
 
 router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
+  const mediaAvailable = req.files && req.files.length > 0;
+
+  let mKeys = [];
   try {
     const { title, description, address, tags } = req.body;
 
@@ -66,12 +104,37 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
       throw new Error('NGO not found or not authorized.');
     }
 
+    // Upload media files asynchronously and collect promises
+    const uploadPromises = req.files.map(async (media) => {
+      const mediaName = `${uuidv4()}.${media.originalname.split('.').pop()}`;
+      const key = `issue/ngo/${ngoId}/${mediaName}`;
+
+      mKeys.push(key);
+
+      // Upload media to S3
+      const response = await addMediaToS3({
+        key: key,
+        body: media.buffer,
+        mimetype: media.mimetype,
+      });
+
+      return {
+        key,
+        url: getMediaFromS3(key),
+        type: media.mimetype,
+      };
+    });
+
+    // Wait for all uploads to complete
+    const mediaFiles = await Promise.all(uploadPromises);
+
     const issue = await createIssue({
       title,
       description,
-      address,
-      tags,
+      address: JSON.parse(address),
+      tags: JSON.parse(tags),
       ownNgoId: ngoId,
+      media: mediaFiles,
     });
 
     res.status(201).json({
@@ -79,6 +142,9 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
       data: issue,
     });
   } catch (err) {
+    await mKeys.forEach(async (key) => {
+      await deleteMediaFromS3(key);
+    });
     next(err);
   }
 });

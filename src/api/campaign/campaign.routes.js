@@ -18,11 +18,19 @@ const {
   getCampaignBroadcastById,
 } = require('./campaign.services');
 const { findNgoById } = require('../ngo/ngo.services');
+const {
+  getMediaFromS3,
+  addMediaToS3,
+  deleteMediaFromS3,
+} = require('../../utils/s3');
+const { v4: uuidv4 } = require('uuid');
 
 const router = express.Router();
 
 router.post('/create/user', isAuthenticated, async (req, res, next) => {
   const isoDate = new Date().toISOString();
+  const mediaAvailable = req.files && req.files.length > 0;
+  let mKeys = [];
 
   try {
     const { id: userId } = req.payload;
@@ -39,7 +47,14 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
       tags,
     } = req.body;
 
-    if (!title || !description || !motto || !startDate || !endDate) {
+    if (
+      !title ||
+      !description ||
+      !motto ||
+      !startDate ||
+      !endDate ||
+      !mediaAvailable
+    ) {
       throw new Error('All fields are required');
     }
 
@@ -49,17 +64,42 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
       throw new Error('User not found');
     }
 
+    // Upload media files asynchronously and collect promises
+    const uploadPromises = req.files.map(async (media) => {
+      const mediaName = `${uuidv4()}.${media.originalname.split('.').pop()}`;
+      const key = `campaign/user/${userId}/${mediaName}`;
+
+      mKeys.push(key);
+
+      // Upload media to S3
+      const response = await addMediaToS3({
+        body: media.buffer,
+        key: key,
+        mimetype: media.mimetype,
+      });
+
+      return {
+        key,
+        url: getMediaFromS3(key),
+        type: media.mimetype,
+      };
+    });
+
+    // Wait for all uploads to complete
+    const mediaFiles = await Promise.all(uploadPromises);
+
     const createdCampaign = await createCampaign({
       ownUserId: userId,
       title,
       description,
       motto,
-      startDate,
-      endDate,
-      address,
-      virtual: virtual || undefined,
-      fundsRequired: fundsRequired || undefined,
-      tags,
+      startDate: JSON.parse(startDate),
+      endDate: JSON.parse(endDate),
+      address: JSON.parse(address),
+      virtual: JSON.parse(virtual),
+      fundsRequired: JSON.parse(fundsRequired),
+      tags: JSON.parse(tags),
+      media: mediaFiles,
     });
 
     return res.json({
@@ -67,12 +107,17 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
       data: createdCampaign,
     });
   } catch (error) {
-    console.log(error.message);
+    await mKeys.forEach(async (key) => {
+      await deleteMediaFromS3(key);
+    });
     next(error);
   }
 });
 
 router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
+  const mediaAvailable = req.files && req.files.length > 0;
+
+  let mKeys = [];
   try {
     const { id: ngoId } = req.payload;
 
@@ -88,7 +133,14 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
       tags,
     } = req.body;
 
-    if (!title || !description || !motto || !startDate || !endDate) {
+    if (
+      !title ||
+      !description ||
+      !motto ||
+      !startDate ||
+      !endDate ||
+      !mediaAvailable
+    ) {
       throw new Error('All fields are required');
     }
 
@@ -98,17 +150,42 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
       throw new Error('Ngo not found');
     }
 
+    // Upload media files asynchronously and collect promises
+    const uploadPromises = req.files.map(async (media) => {
+      const mediaName = `${uuidv4()}.${media.originalname.split('.').pop()}`;
+      const key = `campaign/ngo/${ngoId}/${mediaName}`;
+
+      mKeys.push(key);
+
+      // Upload media to S3
+      const response = await addMediaToS3({
+        key: key,
+        body: media.buffer,
+        mimetype: media.mimetype,
+      });
+
+      return {
+        key,
+        url: getMediaFromS3(key),
+        type: media.mimetype,
+      };
+    });
+
+    // Wait for all uploads to complete
+    const mediaFiles = await Promise.all(uploadPromises);
+
     const createdCampaign = await createCampaign({
       ownNgoId: ngoId,
       title,
       description,
       motto,
-      startDate,
-      endDate,
-      address,
-      virtual,
-      fundsRequired,
-      tags,
+      startDate: JSON.parse(startDate),
+      endDate: JSON.parse(endDate),
+      address: JSON.parse(address),
+      virtual: JSON.parse(virtual),
+      fundsRequired: JSON.parse(fundsRequired),
+      tags: JSON.parse(tags),
+      media: mediaFiles,
     });
 
     return res.json({
@@ -116,6 +193,9 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
       data: createdCampaign,
     });
   } catch (error) {
+    await mKeys.forEach(async (key) => {
+      await deleteMediaFromS3(key);
+    });
     next(error);
   }
 });

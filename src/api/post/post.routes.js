@@ -6,6 +6,12 @@ const { createPost, allPosts, findPostById } = require('./post.services');
 const postVote = require('./vote/vote.routes');
 const postComment = require('./comment/comment.routes');
 const { findNgoById } = require('../ngo/ngo.services');
+const {
+  addMediaToS3,
+  deleteMediaFromS3,
+  getMediaFromS3,
+} = require('../../utils/s3');
+const { v4: uuidv4 } = require('uuid');
 
 const router = express.Router();
 
@@ -13,10 +19,14 @@ router.use('/vote', postVote);
 router.use('/comment', postComment);
 
 router.post('/create/user', isAuthenticated, async (req, res, next) => {
+  const mediaAvailable = req.files && req.files.length > 0;
+
+  let mKeys = [];
+
   try {
     const { title, description, address, tags } = req.body;
 
-    if (!title || !description) {
+    if (!title || !description || !mediaAvailable) {
       res.status(400);
       throw new Error('You must provide all the required fields.');
     }
@@ -30,12 +40,37 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
       throw new Error('User not found or not authorized.');
     }
 
+    // Upload media files asynchronously and collect promises
+    const uploadPromises = req.files.map(async (media) => {
+      const mediaName = `${uuidv4()}.${media.originalname.split('.').pop()}`;
+      const key = `post/user/${userId}/${mediaName}`;
+
+      mKeys.push(key);
+
+      // Upload media to S3
+      const response = await addMediaToS3({
+        key: key,
+        body: media.buffer,
+        mimetype: media.mimetype,
+      });
+
+      return {
+        key,
+        url: getMediaFromS3(key),
+        type: media.mimetype,
+      };
+    });
+
+    // Wait for all uploads to complete
+    const mediaFiles = await Promise.all(uploadPromises);
+
     const post = await createPost({
       title,
       description,
-      address,
-      tags,
+      address: JSON.parse(address),
+      tags: JSON.parse(tags),
       ownUserId: userId,
+      media: mediaFiles,
     });
 
     res.status(201).json({
@@ -43,15 +78,22 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
       data: post,
     });
   } catch (err) {
+    await mKeys.forEach(async (key) => {
+      await deleteMediaFromS3(key);
+    });
     next(err);
   }
 });
 
 router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
+  const mediaAvailable = req.files && req.files.length > 0;
+
+  let mKeys = [];
+
   try {
     const { title, description, address, tags } = req.body;
 
-    if (!title || !description) {
+    if (!title || !description || !mediaAvailable) {
       res.status(400);
       throw new Error('You must provide all the required fields.');
     }
@@ -65,12 +107,37 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
       throw new Error('Ngo not found or not authorized.');
     }
 
+    // Upload media files asynchronously and collect promises
+    const uploadPromises = req.files.map(async (media) => {
+      const mediaName = `${uuidv4()}.${media.originalname.split('.').pop()}`;
+      const key = `post/ngo/${ngoId}/${mediaName}`;
+
+      mKeys.push(key);
+
+      // Upload media to S3
+      const response = await addMediaToS3({
+        key: key,
+        body: media.buffer,
+        mimetype: media.mimetype,
+      });
+
+      return {
+        key,
+        url: getMediaFromS3(key),
+        type: media.mimetype,
+      };
+    });
+
+    // Wait for all uploads to complete
+    const mediaFiles = await Promise.all(uploadPromises);
+
     const post = await createPost({
       title,
       description,
-      address,
-      tags,
+      address: JSON.parse(address),
+      tags: JSON.parse(tags),
       ownNgoId: ngoId,
+      media: mediaFiles,
     });
 
     res.status(201).json({
@@ -78,6 +145,10 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
       data: post,
     });
   } catch (err) {
+    await mKeys.forEach(async (key) => {
+      await deleteMediaFromS3(key);
+    });
+
     next(err);
   }
 });
