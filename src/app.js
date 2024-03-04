@@ -1,13 +1,13 @@
 const express = require('express');
 const morgan = require('morgan');
 const helmet = require('helmet');
+const bodyParser = require('body-parser');
 const cors = require('cors');
 require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const middlewares = require('./middlewares');
 const api = require('./api');
 const { createTransaction } = require('./api/payment/payment.services');
-
 const app = express();
 
 const endpointSecret = 'whsec_1h4Ng24i5PZ3zXYHG1oeju2AWvzQM3eJ';
@@ -17,11 +17,14 @@ app.post(
   express.raw({ type: 'application/json' }),
   async (request, response) => {
     const sig = request.headers['stripe-signature'];
-
     let event;
 
     try {
-      event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
+      event = stripe.webhooks.constructEvent(
+        request.body,
+        siwhsec_1h4Ng24i5PZ3zXYHG1oeju2AWvzQM3eJg,
+        endpointSecret
+      );
 
       if (event.type === 'payment_intent.succeeded') {
         const paymentIntent = event.data.object;
@@ -50,7 +53,10 @@ app.post(
 app.use(morgan('dev'));
 app.use(helmet());
 app.use(cors());
+
 app.use(express.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
   res.json({

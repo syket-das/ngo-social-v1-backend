@@ -22,8 +22,9 @@ type Address {
 }
 
 type Media {
-  key String
-  url String
+  key  String
+  url  String
+  type String
 }
 
 enum Role {
@@ -66,6 +67,7 @@ model User {
   interests                String[]
   password                 String?
   phone                    String?
+  profileImage             Media?
   address                  Address?
   active                   Boolean            @default(true)
   otp                      Int?
@@ -93,13 +95,15 @@ model User {
 }
 
 model Ngo {
-  id         String    @id @default(auto()) @map("_id") @db.ObjectId
-  name       String
-  type       String
-  bio        String?
-  email      String    @unique
-  password   String?
-  phone      String
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  type         String
+  bio          String?
+  email        String  @unique
+  password     String?
+  phone        String
+  profileImage Media?
+
   address    Address
   active     Boolean   @default(true)
   otp        Int?

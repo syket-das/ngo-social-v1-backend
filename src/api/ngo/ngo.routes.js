@@ -6,6 +6,12 @@ const {
   allNGOs,
   searchNgoByName,
 } = require('./ngo.services');
+const {
+  deleteMediaFromS3,
+  addMediaToS3,
+  getMediaFromS3,
+} = require('../../utils/s3');
+const { v4: uuidv4 } = require('uuid');
 
 const router = express.Router();
 
@@ -29,14 +35,52 @@ router.put('/profile/update', isAuthenticated, async (req, res, next) => {
     const { id: ngoId } = req.payload;
     const ngo = await findNgoById(ngoId);
 
+    const mediaAvailable = req.files && req.files.length > 0;
+
     if (!ngo) {
       next(new Error('Ngo not found'));
+    }
+
+    if (mediaAvailable) {
+      const media = req.files[0];
+      const mediaName = `${uuidv4()}.${media.originalname.split('.').pop()}`;
+      const key = `ngo/${ngoId}/${mediaName}`;
+
+      try {
+        const ngoProfile = await findNgoById(ngoId);
+
+        if (ngoProfile?.profileImage?.key) {
+          await deleteMediaFromS3(ngoProfile.profileImage.key);
+        }
+
+        await addMediaToS3({
+          key: key,
+          body: media.buffer,
+          mimetype: media.mimetype,
+        });
+
+        const updatedNgo = await updateNgo(ngoId, {
+          ...req.body,
+          profileImage: {
+            key,
+            url: getMediaFromS3(key),
+            type: media.mimetype,
+          },
+        });
+        delete updatedNgo.password;
+
+        return res.status(200).json(updatedNgo);
+      } catch (error) {
+        await deleteMediaFromS3(key);
+        next(error);
+      }
     }
 
     const updatedNgo = await updateNgo(ngoId, req.body);
     delete updatedNgo.password;
     res.json(updatedNgo);
   } catch (err) {
+    console.log(err);
     next(err);
   }
 });

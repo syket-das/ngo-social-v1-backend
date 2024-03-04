@@ -8,6 +8,13 @@ const {
   searchUserByFullName,
 } = require('./user.services');
 
+const { v4: uuidv4 } = require('uuid');
+const {
+  deleteMediaFromS3,
+  addMediaToS3,
+  getMediaFromS3,
+} = require('../../utils/s3');
+
 const router = express.Router();
 
 router.get('/profile', isAuthenticated, async (req, res, next) => {
@@ -31,6 +38,46 @@ router.put('/profile/update', isAuthenticated, async (req, res, next) => {
   try {
     const { id: userId } = req.payload;
     const { fullName, bio, profession, interests, phone, address } = req.body;
+    const mediaAvailable = req.files && req.files.length > 0;
+
+    if (mediaAvailable) {
+      const media = req.files[0];
+      const mediaName = `${uuidv4()}.${media.originalname.split('.').pop()}`;
+      const key = `user/${userId}/${mediaName}`;
+
+      try {
+        const userProfile = await findUserById(userId);
+
+        if (userProfile?.profileImage?.key) {
+          await deleteMediaFromS3(userProfile.profileImage.key);
+        }
+
+        await addMediaToS3({
+          key: key,
+          body: media.buffer,
+          mimetype: media.mimetype,
+        });
+
+        const user = await updateUser(userId, {
+          fullName,
+          phone,
+          address,
+          bio: bio,
+          profession: profession,
+          interests: interests,
+          profileImage: {
+            key: key,
+            url: getMediaFromS3(key),
+            type: media.mimetype,
+          },
+        });
+
+        return res.status(200).json(user);
+      } catch (error) {
+        await deleteMediaFromS3(key);
+        next(error);
+      }
+    }
 
     const user = await updateUser(userId, {
       fullName,
