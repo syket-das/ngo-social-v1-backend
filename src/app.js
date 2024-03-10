@@ -43,7 +43,7 @@ app.post(
         if (paymentIntent.metadata.donorRole === Role.USER) {
           await addUserPoints(paymentIntent.metadata.donorId, {
             donation: paymentIntent.amount / 100,
-            metadata: {
+            metaData: {
               campaignId: paymentIntent.metadata.campaignId,
               fundRaisingId: paymentIntent.metadata.fundRaisingId,
             },
@@ -51,7 +51,7 @@ app.post(
         } else if (paymentIntent.metadata.donorRole === Role.NGO) {
           await addNgosPoints(paymentIntent.metadata.donorId, {
             donation: paymentIntent.amount / 100,
-            metadata: {
+            metaData: {
               campaignId: paymentIntent.metadata.campaignId,
               fundRaisingId: paymentIntent.metadata.fundRaisingId,
             },
