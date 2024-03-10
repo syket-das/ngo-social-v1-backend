@@ -8,6 +8,11 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const middlewares = require('./middlewares');
 const api = require('./api');
 const { createTransaction } = require('./api/payment/payment.services');
+const { Role } = require('@prisma/client');
+const {
+  addUserPoints,
+  addNgosPoints,
+} = require('./api/points/points.services');
 const app = express();
 
 const endpointSecret = 'whsec_1h4Ng24i5PZ3zXYHG1oeju2AWvzQM3eJ';
@@ -20,11 +25,7 @@ app.post(
     let event;
 
     try {
-      event = stripe.webhooks.constructEvent(
-        request.body,
-        siwhsec_1h4Ng24i5PZ3zXYHG1oeju2AWvzQM3eJg,
-        endpointSecret
-      );
+      event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
 
       if (event.type === 'payment_intent.succeeded') {
         const paymentIntent = event.data.object;
@@ -38,6 +39,24 @@ app.post(
           gatewayTransactionId: paymentIntent.id,
           gatewayTransaction: paymentIntent,
         });
+
+        if (paymentIntent.metadata.donorRole === Role.USER) {
+          await addUserPoints(paymentIntent.metadata.donorId, {
+            donation: paymentIntent.amount / 100,
+            metadata: {
+              campaignId: paymentIntent.metadata.campaignId,
+              fundRaisingId: paymentIntent.metadata.fundRaisingId,
+            },
+          });
+        } else if (paymentIntent.metadata.donorRole === Role.NGO) {
+          await addNgosPoints(paymentIntent.metadata.donorId, {
+            donation: paymentIntent.amount / 100,
+            metadata: {
+              campaignId: paymentIntent.metadata.campaignId,
+              fundRaisingId: paymentIntent.metadata.fundRaisingId,
+            },
+          });
+        }
       }
     } catch (err) {
       console.log(err);
