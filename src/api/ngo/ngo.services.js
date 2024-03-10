@@ -31,6 +31,7 @@ function findNgoById(id) {
           votes: true,
         },
       },
+      ngoPoints: true,
     },
   });
 }
@@ -113,6 +114,7 @@ const searchNgoByName = (name) => {
           ownNgo: true,
         },
       },
+      ngoPoints: true,
     },
   });
 };

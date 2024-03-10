@@ -151,7 +151,10 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
 
 router.get('/all', isAuthenticated, async (req, res, next) => {
   try {
-    const issues = await getIssues();
+    const query = req.query.query || '';
+    console.log(query);
+
+    const issues = await getIssues(query);
 
     const filteredIssuesForLoggedInUser = issues.map((issue) => {
       return {
@@ -221,6 +224,7 @@ router.get('/all', isAuthenticated, async (req, res, next) => {
       data: filteredIssuesForLoggedInUser,
     });
   } catch (err) {
+    console.log(err);
     next(err);
   }
 });

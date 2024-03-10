@@ -38,6 +38,7 @@ function findUserById(id) {
           votes: true,
         },
       },
+      userPoints: true,
     },
   });
 }
@@ -113,6 +114,7 @@ const searchUserByFullName = (fullName) => {
           ownUser: true,
         },
       },
+      userPoints: true,
     },
   });
 };

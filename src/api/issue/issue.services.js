@@ -34,8 +34,24 @@ const getIssueById = (id) => {
   });
 };
 
-const getIssues = () => {
+const getIssues = (query) => {
   return db.issue.findMany({
+    where: {
+      OR: [
+        {
+          title: {
+            contains: query || '',
+            mode: 'insensitive',
+          },
+        },
+        {
+          description: {
+            contains: query || '',
+            mode: 'insensitive',
+          },
+        },
+      ],
+    },
     include: {
       comments: {
         orderBy: {
