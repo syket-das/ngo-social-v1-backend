@@ -7,6 +7,10 @@ const { getIssueById } = require('../issue.services');
 const { createIssueComment } = require('./comment.services');
 
 const issueCommentVote = require('./vote/vote.routes');
+const {
+  addUserPoints,
+  addNgosPoints,
+} = require('../../points/points.services');
 
 const router = express.Router();
 
@@ -42,6 +46,13 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
       comment,
       userId,
       parentId,
+    });
+
+    await addUserPoints(userId, {
+      donation: 0.2 / 100,
+      metaData: {
+        issueId: issueId,
+      },
     });
 
     res.status(201).json({
@@ -83,6 +94,13 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
       ngoId,
       comment,
       parentId,
+    });
+
+    await addNgosPoints(userId, {
+      donation: 0.2 / 100,
+      metaData: {
+        issueId: issueId,
+      },
     });
 
     res.status(201).json({
