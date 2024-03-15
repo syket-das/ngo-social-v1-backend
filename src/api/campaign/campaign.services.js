@@ -168,6 +168,28 @@ const donateToCampaign = (campaignId, data) => {
   });
 };
 
+const checkIfNgoOwnsCampaign = (campaignId, ngoId) => {
+  return db.campaign.findFirst({
+    where: {
+      id: campaignId,
+      ownNgo: {
+        id: ngoId,
+      },
+    },
+  });
+};
+
+const checkIfUserOwnsCampaign = (campaignId, userId) => {
+  return db.campaign.findFirst({
+    where: {
+      id: campaignId,
+      ownUser: {
+        id: userId,
+      },
+    },
+  });
+};
+
 module.exports = {
   createCampaign,
   getCampaigns,
@@ -183,4 +205,6 @@ module.exports = {
   deleteBroadcast,
   getCampaignBroadcastById,
   donateToCampaign,
+  checkIfNgoOwnsCampaign,
+  checkIfUserOwnsCampaign,
 };

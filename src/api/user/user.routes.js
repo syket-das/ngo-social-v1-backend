@@ -30,6 +30,7 @@ router.get('/profile', isAuthenticated, async (req, res, next) => {
       user,
     });
   } catch (err) {
+    userPoints;
     next(err);
   }
 });
