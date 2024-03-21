@@ -17,6 +17,7 @@ const {
   deleteBroadcast,
   getCampaignBroadcastById,
   checkIfNgoOwnsCampaign,
+  checkIfUserOwnsCampaign,
 } = require('./campaign.services');
 const { findNgoById } = require('../ngo/ngo.services');
 const {
@@ -291,7 +292,7 @@ router.delete(
   isAuthenticated,
   async (req, res, next) => {
     try {
-      const { id: ownNgoId } = req.payload;
+      const { id: ownerId } = req.payload;
       const { campaignId, ngoId } = req.params;
 
       const ngoExist = await findNgoById(ngoId);
@@ -306,9 +307,10 @@ router.delete(
         throw new Error('Campaign not found');
       }
 
-      const checkForOwner = await checkIfNgoOwnsCampaign(campaignId, ownNgoId);
+      const checkForOwner = await checkIfNgoOwnsCampaign(campaignId, ownerId);
+      const checkFOrOwner2 = await checkIfUserOwnsCampaign(campaignId, ownerId);
 
-      if (!checkForOwner) {
+      if (!checkForOwner || !checkFOrOwner2) {
         throw new Error('Not authorized to force leave ngo');
       }
 
@@ -321,14 +323,81 @@ router.delete(
           success: true,
           message: 'Left campaign successfully',
         });
-      } else {
-        const updatedCampaign = await joinCampaignAsNgo(campaignId, ngoId);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.delete(
+  '/member/force-leave/user/:campaignId/:userId',
+  isAuthenticated,
+  async (req, res, next) => {
+    try {
+      const { id: ownerId, role } = req.payload;
+      const { campaignId, userId } = req.params;
+
+      const userExist = await findUserById(userId);
+
+      if (!userExist || userExist.role !== Role.USER) {
+        throw new Error('User not found');
+      }
+
+      const campaignExist = await getCampaignById(campaignId);
+
+      if (!campaignExist) {
+        throw new Error('Campaign not found');
+      }
+
+      let owner = false;
+
+      // const checkForOwner = await checkIfNgoOwnsCampaign(campaignId, ownerId);
+      // const checkFOrOwner2 = await checkIfUserOwnsCampaign(campaignId, ownerId);
+
+      if (role === Role.NGO) {
+        const checkForOwner = await checkIfNgoOwnsCampaign(campaignId, ownerId);
+
+        if (!checkForOwner) {
+          throw new Error('Not authorized to force leave ngo');
+        }
+
+        if (checkForOwner?.ownNgoId === ownerId) {
+          owner = true;
+        }
+      }
+
+      if (role === Role.USER) {
+        const checkFOrOwner2 = await checkIfUserOwnsCampaign(
+          campaignId,
+          ownerId
+        );
+
+        if (!checkFOrOwner2) {
+          throw new Error('Not authorized to force leave ngo');
+        }
+
+        if (checkFOrOwner2?.ownUserId === ownerId) {
+          owner = true;
+        }
+      }
+
+      if (!owner) {
+        throw new Error('Not authorized to force leave ngo');
+      }
+
+      const isMember = await checkIfUserJoinedCampaign(campaignId, userId);
+
+      if (isMember) {
+        const updatedCampaign = await leaveCampaignAsUser(campaignId, userId);
+
         return res.json({
           success: true,
-          message: 'Joined campaign successfully',
+          message: 'Left campaign successfully',
         });
       }
     } catch (error) {
+      console.log(error);
       next(error);
     }
   }
