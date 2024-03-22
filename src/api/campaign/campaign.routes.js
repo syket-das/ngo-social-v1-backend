@@ -311,7 +311,10 @@ router.delete(
       const checkFOrOwner2 = await checkIfUserOwnsCampaign(campaignId, ownerId);
 
       if (!checkForOwner || !checkFOrOwner2) {
-        throw new Error('Not authorized to force leave ngo');
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to force leave ngo',
+        });
       }
 
       const isMember = await checkIfNgoJoinedCampaign(campaignId, ngoId);
@@ -325,6 +328,7 @@ router.delete(
         });
       }
     } catch (error) {
+      console.log(error);
       next(error);
     }
   }

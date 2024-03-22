@@ -52,8 +52,27 @@ const updateUser = (id, body) => {
   });
 };
 
-const allUsers = () => {
-  return db.user.findMany({});
+const allUsers = async () => {
+  // `user has userpoints array of objects every object contains donation, volunteer, and other points need sun of all points and return user with total points`
+
+  const users = await db.user.findMany({
+    include: {
+      userPoints: true,
+    },
+  });
+
+  return users.map((user) => {
+    let totalPoints = 0;
+
+    user.userPoints.forEach((point) => {
+      totalPoints += point.donation + point.volunteer + point.intellectual;
+    });
+
+    return {
+      ...user,
+      totalPoints,
+    };
+  });
 };
 
 const searchUserByFullName = (fullName) => {

@@ -81,6 +81,7 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
     await mKeys.forEach(async (key) => {
       await deleteMediaFromS3(key);
     });
+    console.log(err);
     next(err);
   }
 });

@@ -96,7 +96,7 @@ router.put('/profile/update', isAuthenticated, async (req, res, next) => {
   }
 });
 
-router.get('/all', isAuthenticated, async (req, res, next) => {
+router.get('/all', async (req, res, next) => {
   try {
     const users = await allUsers();
     res.json({

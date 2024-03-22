@@ -17,8 +17,8 @@ type Address {
   state        String?
   country      String?
   zipCode      String?
-  lat          String?
-  lng          String?
+  lat          Float?
+  lng          Float?
 }
 
 type Media {
