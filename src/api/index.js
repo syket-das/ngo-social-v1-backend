@@ -8,6 +8,7 @@ const issue = require('./issue/issue.routes');
 const campaign = require('./campaign/campaign.routes');
 const notification = require('./notification/notification.routes');
 const payment = require('./payment/payment.routes');
+const fundRaising = require('./fundRaising/fundRaising.routes');
 
 const router = express.Router();
 
@@ -28,5 +29,6 @@ router.use('/issue', upload.array('media'), issue);
 router.use('/campaign', upload.array('media'), campaign);
 router.use('/notification', notification);
 router.use('/payment', payment);
+router.use('/fundRaising', upload.array('media'), fundRaising);
 
 module.exports = router;

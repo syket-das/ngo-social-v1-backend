@@ -64,7 +64,6 @@ app.post(
       return;
     }
 
-    // Return a 200 response to acknowledge receipt of the event
     response.json({ received: true });
   }
 );

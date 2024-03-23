@@ -40,4 +40,40 @@ router.post(
   }
 );
 
+router.post(
+  '/create-payment-intent/fundRaising',
+  isAuthenticated,
+
+  async (req, res, next) => {
+    const { amount, fundRaisingId } = req.body;
+
+    const { id, role } = req.payload;
+
+    try {
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(Number(amount) * 100),
+        currency: 'inr',
+        automatic_payment_methods: {
+          enabled: true,
+        },
+
+        metadata: {
+          donorId: id,
+          donorRole: role,
+          fundRaisingId: fundRaisingId,
+        },
+      });
+
+      return res.json({
+        success: true,
+        data: {
+          clientSecret: paymentIntent.client_secret,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 module.exports = router;
