@@ -38,6 +38,13 @@ function findUserById(id) {
           votes: true,
         },
       },
+      fundRaisings: {
+        include: {
+          user: true,
+          ngo: true,
+          transactions: true,
+        },
+      },
       userPoints: true,
     },
   });

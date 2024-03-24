@@ -13,13 +13,9 @@ const getIssueById = (id) => {
     },
 
     include: {
-      votes: true,
       comments: {
         orderBy: {
-          // most voted comments first
-          votes: {
-            _count: 'desc',
-          },
+          createdAt: 'desc',
         },
 
         include: {
@@ -28,8 +24,9 @@ const getIssueById = (id) => {
           ngo: true,
         },
       },
-      ownUser: true,
+      votes: true,
       ownNgo: true,
+      ownUser: true,
     },
   });
 };

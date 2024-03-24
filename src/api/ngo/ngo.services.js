@@ -31,6 +31,13 @@ function findNgoById(id) {
           votes: true,
         },
       },
+      fundRaisings: {
+        include: {
+          user: true,
+          ngo: true,
+          transactions: true,
+        },
+      },
       ngoPoints: true,
     },
   });
