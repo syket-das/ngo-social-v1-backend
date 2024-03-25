@@ -89,6 +89,12 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
 
     // Wait for all uploads to complete
     const mediaFiles = await Promise.all(uploadPromises);
+    let parsedAddress = JSON.parse(address);
+
+    if (parsedAddress.lat == '' || parsedAddress.lng == '') {
+      parsedAddress.lat = undefined;
+      parsedAddress.lng = undefined;
+    }
 
     const createdCampaign = await createCampaign({
       ownUserId: userId,
@@ -97,7 +103,7 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
       motto,
       startDate: JSON.parse(startDate),
       endDate: JSON.parse(endDate),
-      address: JSON.parse(address),
+      address: parsedAddress,
       virtual: JSON.parse(virtual),
       fundsRequired: JSON.parse(fundsRequired),
       tags: JSON.parse(tags),
@@ -176,6 +182,13 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
     // Wait for all uploads to complete
     const mediaFiles = await Promise.all(uploadPromises);
 
+    let parsedAddress = JSON.parse(address);
+
+    if (parsedAddress.lat == '' || parsedAddress.lng == '') {
+      parsedAddress.lat = undefined;
+      parsedAddress.lng = undefined;
+    }
+
     const createdCampaign = await createCampaign({
       ownNgoId: ngoId,
       title,
@@ -183,7 +196,7 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
       motto,
       startDate: JSON.parse(startDate),
       endDate: JSON.parse(endDate),
-      address: JSON.parse(address),
+      address: parsedAddress,
       virtual: JSON.parse(virtual),
       fundsRequired: JSON.parse(fundsRequired),
       tags: JSON.parse(tags),

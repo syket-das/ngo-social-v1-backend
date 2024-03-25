@@ -70,6 +70,12 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
 
     // Wait for all uploads to complete
     const mediaFiles = await Promise.all(uploadPromises);
+    let parsedAddress = JSON.parse(address);
+
+    if (parsedAddress.lat == '' || parsedAddress.lng == '') {
+      parsedAddress.lat = undefined;
+      parsedAddress.lng = undefined;
+    }
 
     const createdFundRaising = await createFundRaising({
       userId: userId,
@@ -77,7 +83,7 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
       description,
       startDate: JSON.parse(startDate),
       endDate: JSON.parse(endDate),
-      address: JSON.parse(address),
+      address: parsedAddress,
       amount: JSON.parse(amount),
       tags: JSON.parse(tags),
       media: mediaFiles,
@@ -146,6 +152,12 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
 
     // Wait for all uploads to complete
     const mediaFiles = await Promise.all(uploadPromises);
+    let parsedAddress = JSON.parse(address);
+
+    if (parsedAddress.lat == '' || parsedAddress.lng == '') {
+      parsedAddress.lat = undefined;
+      parsedAddress.lng = undefined;
+    }
 
     const createdFundRaising = await createFundRaising({
       ngoId: ngoId,
@@ -153,7 +165,7 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
       description,
       startDate: JSON.parse(startDate),
       endDate: JSON.parse(endDate),
-      address: JSON.parse(address),
+      address: parsedAddress,
       amount: JSON.parse(amount),
       tags: JSON.parse(tags),
       media: mediaFiles,

@@ -64,10 +64,17 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
     // Wait for all uploads to complete
     const mediaFiles = await Promise.all(uploadPromises);
 
+    let parsedAddress = JSON.parse(address);
+
+    if (parsedAddress.lat == '' || parsedAddress.lng == '') {
+      parsedAddress.lat = undefined;
+      parsedAddress.lng = undefined;
+    }
+
     const post = await createPost({
       title,
       description,
-      address: JSON.parse(address),
+      address: parsedAddress,
       tags: JSON.parse(tags),
       ownUserId: userId,
       media: mediaFiles,
@@ -132,10 +139,17 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
     // Wait for all uploads to complete
     const mediaFiles = await Promise.all(uploadPromises);
 
+    let parsedAddress = JSON.parse(address);
+
+    if (parsedAddress.lat == '' || parsedAddress.lng == '') {
+      parsedAddress.lat = undefined;
+      parsedAddress.lng = undefined;
+    }
+
     const post = await createPost({
       title,
       description,
-      address: JSON.parse(address),
+      address: parsedAddress,
       tags: JSON.parse(tags),
       ownNgoId: ngoId,
       media: mediaFiles,
