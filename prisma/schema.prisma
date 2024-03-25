@@ -93,6 +93,8 @@ model User {
   notifications  Notification[]
   fundRaisings   FundRaising[]
   userPoints     UserPoints[]
+  followers      Follow[]       @relation(name: "FollowerToUser")
+  followings     Follow[]       @relation(name: "FollowingToUser")
 }
 
 model Ngo {
@@ -131,6 +133,24 @@ model Ngo {
   notifications            Notification[]
   fundRaisings             FundRaising[]
   ngoPoints                NgoPoints[]
+  followers                Follow[]           @relation(name: "FollowerToNgo")
+  followings               Follow[]           @relation(name: "FollowingToNgo")
+}
+
+model Follow {
+  id              String @id @default(auto()) @map("_id") @db.ObjectId
+  followerUserId  String @db.ObjectId
+  followerUser    User   @relation(name: "FollowerToUser", fields: [followerUserId], references: [id])
+  followingUserId String @db.ObjectId
+  followingUser   User   @relation(name: "FollowingToUser", fields: [followingUserId], references: [id])
+
+  followingNgoId String @db.ObjectId
+  followingNgo   Ngo    @relation(name: "FollowerToNgo", fields: [followingNgoId], references: [id])
+  followerNgoId  String @db.ObjectId
+  followerNgo    Ngo    @relation(name: "FollowingToNgo", fields: [followerNgoId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model UserPoints {
