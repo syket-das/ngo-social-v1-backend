@@ -20,7 +20,6 @@ const {
 const router = express.Router();
 
 router.post('/create/user', isAuthenticated, async (req, res, next) => {
-  const isoDate = new Date().toISOString();
   const mediaAvailable = req.files && req.files.length > 0;
   let mKeys = [];
 
@@ -84,7 +83,7 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
       startDate: JSON.parse(startDate),
       endDate: JSON.parse(endDate),
       address: parsedAddress,
-      amount: JSON.parse(amount),
+      amount: Number(amount),
       tags: JSON.parse(tags),
       media: mediaFiles,
     });
@@ -98,6 +97,7 @@ router.post('/create/user', isAuthenticated, async (req, res, next) => {
       await deleteMediaFromS3(key);
     });
     next(error);
+    console.log(error);
   }
 });
 
@@ -166,7 +166,7 @@ router.post('/create/ngo', isAuthenticated, async (req, res, next) => {
       startDate: JSON.parse(startDate),
       endDate: JSON.parse(endDate),
       address: parsedAddress,
-      amount: JSON.parse(amount),
+      amount: Number(amount),
       tags: JSON.parse(tags),
       media: mediaFiles,
     });
